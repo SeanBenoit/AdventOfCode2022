@@ -1,8 +1,15 @@
 package day5
 
+import day5.Crates.Model.CRATEMOVER_9000
+import day5.Crates.Model.CRATEMOVER_9001
 import java.util.*
 
-class Crates(private val numberOfStacks: Int) {
+class Crates(private val numberOfStacks: Int, val model: Model) {
+    enum class Model {
+        CRATEMOVER_9000,
+        CRATEMOVER_9001,
+    }
+
     private val stacks: List<Stack<String>>
 
     init {
@@ -16,9 +23,24 @@ class Crates(private val numberOfStacks: Int) {
     }
 
     private fun move(amount: Int, src: Int, dest: Int) {
-        repeat(amount) {
-            val item = stacks[src - 1].pop()
-            stacks[dest - 1].push(item)
+        when (model) {
+            CRATEMOVER_9000 -> {
+                repeat(amount) {
+                    val item = stacks[src - 1].pop()
+                    stacks[dest - 1].push(item)
+                }
+            }
+            CRATEMOVER_9001 -> {
+                val tempStack = Stack<String>()
+                repeat(amount) {
+                    val item = stacks[src - 1].pop()
+                    tempStack.push(item)
+                }
+                repeat(amount) {
+                    val item = tempStack.pop()
+                    stacks[dest - 1].push(item)
+                }
+            }
         }
     }
 
@@ -45,13 +67,13 @@ class Crates(private val numberOfStacks: Int) {
     }
 
     companion object {
-        fun constructStacks(input: List<String>): Crates {
+        fun constructStacks(input: List<String>, model: Model): Crates {
             val numberOfStacks = input.last()
                     .trim()
                     .split("   ")
                     .size
 
-            val crates = Crates(numberOfStacks)
+            val crates = Crates(numberOfStacks, model)
 
             // Parse the stacks of crates from the bottom up because LIFO order
             val crateInput = input.dropLast(1) // Remove the row labelling the stacks
@@ -77,7 +99,7 @@ fun solvePuzzle1(input: List<String>) {
     val startingState = input.take(separatorIndex)
     val instructions = input.drop(separatorIndex + 1)
 
-    val crates = Crates.constructStacks(startingState)
+    val crates = Crates.constructStacks(startingState, CRATEMOVER_9000)
 
     crates.followInstructions(instructions)
 
@@ -87,5 +109,15 @@ fun solvePuzzle1(input: List<String>) {
 }
 
 fun solvePuzzle2(input: List<String>) {
+    val separatorIndex = input.indexOf("")
+    val startingState = input.take(separatorIndex)
+    val instructions = input.drop(separatorIndex + 1)
 
+    val crates = Crates.constructStacks(startingState, CRATEMOVER_9001)
+
+    crates.followInstructions(instructions)
+
+    val result = crates.getTopOfStacks()
+
+    println(result)
 }
