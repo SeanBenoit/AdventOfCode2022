@@ -1,5 +1,7 @@
 package day9
 
+import utils.minus
+import utils.plus
 import kotlin.math.abs
 
 class RopeSegment(
@@ -65,14 +67,6 @@ fun Pair<Int, Int>.maxComponent(): Int {
 
 fun Pair<Int, Int>.normalize(): Pair<Int, Int> {
     return Pair(first.coerceIn(-1..1), second.coerceIn(-1..1))
-}
-
-operator fun Pair<Int, Int>.plus(other: Pair<Int, Int>): Pair<Int, Int> {
-    return Pair(this.first + other.first, this.second + other.second)
-}
-
-operator fun Pair<Int, Int>.minus(other: Pair<Int, Int>): Pair<Int, Int> {
-    return Pair(this.first - other.first, this.second - other.second)
 }
 
 fun solvePuzzle1(input: List<String>) {
