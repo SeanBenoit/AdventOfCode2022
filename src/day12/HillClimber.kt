@@ -1,5 +1,6 @@
 package day12
 
+import utils.manhattanDistance
 import java.util.*
 import kotlin.Int.Companion.MAX_VALUE
 import kotlin.math.abs
@@ -28,8 +29,7 @@ class HillClimber(
 
         // Manhattan distance to specified goal position. Used for A* heuristic.
         fun heuristicToGoal(goalPosition: Pair<Int, Int>): Int {
-            return abs(position.first - goalPosition.first) +
-                    abs(position.second - goalPosition.second)
+            return position.manhattanDistance(goalPosition)
         }
 
         // Adds neighbour both ways
