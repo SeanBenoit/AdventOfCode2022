@@ -1,22 +1,19 @@
 package day15
 
 import utils.manhattanDistance
-import java.util.*
 import kotlin.math.abs
 
 class BeaconExclusionZone(
-    private val sensorLocation: Pair<Int, Int>,
+    val sensorLocation: Pair<Int, Int>,
     private val beaconLocation: Pair<Int, Int>,
 ) {
-    private val range = sensorLocation.manhattanDistance(beaconLocation)
+    val range = sensorLocation.manhattanDistance(beaconLocation)
 
     fun blockedPositionsInRow(y: Int): Set<Int> {
-        val distanceToY = abs(y - sensorLocation.second)
-
-        // Row of interest is out of range of this sensor
-        if (distanceToY > range) return setOf()
+        if (!isInRangeOfRow(y)) return setOf()
 
         val x = sensorLocation.first
+        val distanceToY = abs(y - sensorLocation.second)
         val delta = range - distanceToY
 
         return (x - delta..x + delta).toSet()
@@ -33,6 +30,11 @@ class BeaconExclusionZone(
 
     fun isInRangeOf(x: Int, y: Int): Boolean {
         return sensorLocation.manhattanDistance(x to y) <= range
+    }
+
+    fun isInRangeOfRow(y: Int): Boolean {
+        val distanceToY = abs(y - sensorLocation.second)
+        return distanceToY <= range
     }
 
     companion object {
@@ -60,8 +62,6 @@ class BeaconExclusionZone(
 }
 
 fun solvePuzzle1(input: List<String>) {
-    println(Date())
-
     val importantRow = 2_000_000
 
     val beaconExclusionZones = input.map { BeaconExclusionZone.fromString(it) }
@@ -79,28 +79,44 @@ fun solvePuzzle1(input: List<String>) {
     val result = (blockedPositions - beaconPositions).size
 
     println(result)
-
-    println(Date())
 }
 
 fun solvePuzzle2(input: List<String>) {
     val beaconExclusionZones = input.map { BeaconExclusionZone.fromString(it) }
-
-    println(Date())
+    val sensorsByXCoordinate = beaconExclusionZones.sortedBy {
+        it.sensorLocation.first
+    }
 
     val minCoordinate = 0
     val maxCoordinate = 4_000_000
-    for (x in minCoordinate..maxCoordinate) {
-        for (y in minCoordinate..maxCoordinate) {
-            if (beaconExclusionZones.none { it.isInRangeOf(x, y) }) {
-                val result = x.toLong() * 4_000_000L + y
-                println(Date())
-                println(result)
-                return
-            }
+    var y = minCoordinate
+    while (y  <= maxCoordinate) {
+        val sensorsInRangeOfRow = sensorsByXCoordinate.filter {
+            it.isInRangeOfRow(y)
         }
+
+        var x = minCoordinate
+        var sensorIndex = 0
+        while (x <= maxCoordinate) {
+            // Skip to the next sensor we're in range of
+            while (!sensorsInRangeOfRow[sensorIndex].isInRangeOf(x, y)) {
+                sensorIndex++
+                if (sensorIndex > sensorsInRangeOfRow.lastIndex) {
+                    // Found a spot that's out of range of all sensors
+                    val result = 4_000_000L * x + y
+                    println(result)
+                    return
+                }
+            }
+
+            // Skip to the other side of this sensor's range if it's farther
+            val sensorLocation = sensorsInRangeOfRow[sensorIndex].sensorLocation
+            val yDelta = abs(sensorLocation.second - y)
+            val leftoverRange = sensorsInRangeOfRow[sensorIndex].range - yDelta
+            x = sensorLocation.first + leftoverRange + 1
+        }
+        y++
     }
 
     println("Didn't find an open position in range!")
-    println(Date())
 }
